@@ -4,7 +4,7 @@
 - 서비스 분리는 각 서비스가 비즈니스 요구에 맞춰 독립적으로 확장 가능하고, 유지보수가 용이하도록 설계하는 것이 목표
 - 개발부터 배포까지 효율적으로 수행 가능 -> 기업이 개발 및 유지보수에 소요되는 시간과 비용을 줄이는 데 도움
 
-![alt text](image-2.png)
+![alt text](images/image-2.png)
 
 ## 단위 서비스로 쪼개기
 - 기업의 목표에 맞춰 적절한 서비스 크기를 결정하고 검증
@@ -15,10 +15,10 @@
 - 서비스 간 느슨한 결합(Loose Coupling)과 높은 응집력(High Cohesion) 유지하면서, 각 서비스가 단일 목적의 기능을 수행하도록 분리하기 위해 관련 기능을 모아 하나의 도메인으로 묶음
 - MSA에서 이러한 도메인 구분은 서비스 분리의 기준 -> 도메인을 잘못 나누면 MSA 어려움을 초래할 수 있으므로, 적절한 도메인 설계가 중요
 
-![alt text](image.png)
+![alt text](images/image.png)
 ## 전략적 설계와 전술적 설계
 
-![alt text](image-3.png)
+![alt text](images/image-3.png)
 ### 전략적 설계 (Strategic Design)
 MSA에서 각 서비스를 어떤 기준으로 분리할지에 대한 큰 틀을 결정하는 단계, Bounded Context를 정의하고, 서비스 간 경계를 설정
 
@@ -52,11 +52,11 @@ MSA에서는 여러 서비스가 독립적인 데이터베이스를 가지고 �
 - **Saga 패턴**: 여러 서비스에 걸쳐 발생하는 트랜잭션을 순차적으로 처리하고, 중간에 실패할 경우 보상 트랜잭션을 통해 롤백하는 방식.
 
 Choreography based SAGA pattern
-![alt text](image-4.png)
+![alt text](images/image-4.png)
 Choreography based SAGA pattern(실패 시)
-![alt text](image-5.png)
+![alt text](images/image-5.png)
 Orchestration based SAGA pattern
-![alt text](image-6.png)
+![alt text](images/image-6.png)
 
 - **이벤트 소싱**: 상태 변경을 이벤트로 저장하고, 이 이벤트 로그를 기반으로 시스템의 상태를 재구성하는 방식.
 
