@@ -6,7 +6,7 @@
     - [Control Plane Components (Master Node)](#control-plane-components-master-node)
     - [Node Components (Worker Node)](#node-components-worker-node)
 - [4. 컨테이너 오케스트레이션 툴 비교](#4-컨테이너-오케스트레이션-툴-비교)
-    - [코드 분석](#코드-분석)
+- [5. 코드 분석](#5-코드-분석)
     - [분석할 레포지토리 소개: `egovframe-msa-edu`](#분석할-레포지토리-소개-egovframe-msa-edu)
     - [Kubernetes 환경 구성 분석](#kubernetes-환경-구성-분석)
     - [Ingress의 역할](#ingress의-역할)
@@ -99,7 +99,7 @@
 | 자동 스케일링 | 내장             | 제한적       | 지원         | 지원   | 지원    | 지원      |
 | 롤링 업데이트 | 지원             | 지원         | 지원         | 지원   | 지원    | 지원      |
 
-### 코드 분석
+# 5. 코드 분석
 
 ### 분석할 레포지토리 소개: `egovframe-msa-edu`
 
@@ -152,11 +152,11 @@
 
 이를 아키텍처로 간단하게 나타내보면 다음과 같습니다.
 
-!https://blog.kakaocdn.net/dn/5Fo9C/btsJPz5ie92/FZ4Hsd5h6dx41XZolKhJwk/img.png
+![](https://blog.kakaocdn.net/dn/5Fo9C/btsJPz5ie92/FZ4Hsd5h6dx41XZolKhJwk/img.png)
 
 ### Ingress의 역할
 
-!https://kubernetes.io/ko/docs/images/ingress.svg
+![](https://kubernetes.io/ko/docs/images/ingress.svg)
 
 Kubernetes 클러스터 외부에서 내부 서비스로 HTTP와 HTTPS 경로를 노출할 때, `Ingress` 리소스를 사용합니다. 이 리소스는 외부 요청을 클러스터 내부의 적절한 서비스로 라우팅하는 역할을 하며, 복잡한 네트워크 설정 없이도 외부 접근을 쉽게 관리할 수 있습니다. 예를 들어, 호텔의 프론트 데스크처럼 모든 외부 요청을 적절한 내부 서비스로 안내하는 것과 비슷한 역할을 합니다.
 
@@ -168,7 +168,7 @@ eGovFramework 레포지토리에서 눈에 띄는 또 다른 구성 요소는 `k
 
 ### `kustomize.yaml` 파일 구조 분석
 
-!https://blog.kakaocdn.net/dn/bG5Q7T/btsJO2m0jNP/5sBuDtHzG5R4dDBCFvGkBK/img.png
+![](https://blog.kakaocdn.net/dn/bG5Q7T/btsJO2m0jNP/5sBuDtHzG5R4dDBCFvGkBK/img.png)
 
 각각의 `kustomization.yaml` 파일은 애플리케이션의 다양한 계층 또는 구성 요소를 관리합니다. 아래는 `applications` 디렉터리의 예시입니다:
 
@@ -257,11 +257,11 @@ backend/
 
 - **API Gateway**: 모든 API 서버들의 엔드포인트를 단일화하고, 인증 및 인가를 관리합니다.
 
-!https://blog.kakaocdn.net/dn/RN01g/btsJQAvhqNA/aBR1fSQxTicU1VLJGK3jpK/img.png
+![](https://blog.kakaocdn.net/dn/RN01g/btsJQAvhqNA/aBR1fSQxTicU1VLJGK3jpK/img.png)
 
 - **Discovery**: 분산 환경에서 동적으로 변경되는 서비스의 위치를 관리하며, 클라이언트가 서비스를 호출할 때 필요한 정보를 제공합니다.
 
-![image.png](https://prod-files-secure.s3.us-west-2.amazonaws.com/c6e289a5-e497-4bba-bd80-f6f8776c1434/230c926a-fc87-42e1-8f05-d4aa40156635/image.png)
+![service-discovery](img/service-discovery.png)
 
 ### Environments 구성 요소
 
