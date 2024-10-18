@@ -2,7 +2,7 @@
 
 ## 0. 메시지 지향 미들웨어(MOM)
 
-응용 소프트웨어 간의 비동기적 데이터 통신을 위한 소프트웨어로, 메시지를 전달하는 과정에서 다음과 같은 장점을 가집니다:
+응용 소프트웨어 간의 비동기적 데이터 통신을 위한 소프트웨어로, 사용 시 다음과 같은 장점을 가집니다:
 
 - 메시지의 백업 기능을 유지함으로 지속성을 제공하기에 송수신 측은 동시에 네트워크 연결을 유지할 필요가 없습니다.
 - 메시지 라우팅을 수행하기에 하나의 메시지를 여러 수신자에게 배포가 가능합니다.
@@ -30,30 +30,29 @@
 
 ### 메시지 브로커
 
-- 메시지 브로커는 Producer가 생산한 메시지를 메시지 큐에 저장하고, 저장된 메시지를 Consumer가 가져갈 수 있도록 합니다.
-- 메시지 브로커는 Consumer가 메시지 큐에서 데이터를 가져가면 짧은 시간 내에 메시지 큐에서 데이터가 삭제되는 특징이 있습니다.
-- 주로 작업 큐나 요청-응답 패턴에 적합합니다.
-- ex) RabbitMQ, ActiveMQ, AWS SQS, Redis
+- Consumer가 메시지 큐에서 데이터를 가져가면 짧은 시간 내에 메시지 큐에서 데이터가 삭제됩니다.
+- 일회성 작업에 대한 메시지를 다룹니다.
+- 하나의 Consumer가 메시지를 처리할 수 있게 함으로써 `One-way Messaging`이나 `Request/Response Messaging`패턴에 적합합니다.
+- ex) RabbitMQ, ActiveMQ, AWS SQS, Redis(Queue)
 
 ### 이벤트 브로커
 
-- 이벤트 브로커가 관리하는 데이터를 이벤트라고 합니다.
-- Consumer가 메시지 큐에서 데이터를 가져가도 삭제되지 않으며, 필요한 경우 다시 소비할 수 있습니다.
+- Consumer가 메시지 큐에서 데이터를 가져가도 삭제되지 않으며, 필요한 경우 재사용할 수 있습니다.
+- 여러 Consumer가 동일한 메시지를 독립적으로 처리할 수 있게 함으로써 `Pub/Sub`패턴에 적합합니다.
 - 메시지 브로커보다 대용량 데이터를 처리할 수 있는 능력이 있습니다.
-- 실시간 스트리밍 처리와 데이터 파이프라인 구축에 적합합니다.
-- ex) Apache Kafka, Apache Pulsar
+- ex) Apache Kafka, Apache Pulsar, Redis(Pub/Sub)
 
 ## 4. 메시징 패턴
 ### One-way Messaging
 ![One-way Messaging](images/pattern-one-way.jpeg)
 - point-to-point messaging
-- `Producer`는 `Consumer`가 특정 시점에 메세지 검색하고 처리할 것을 기대하고 Queue에 메세지를 보냅니다
-- `Consumer`는 `Queue`에서 메세지를 검색하고 처리하며, 여기서 `Producer`는 `Consumer`의 존재나 메세지가 어떻게 process 되는지 알지 못하며 `Consumer`의 응답을 기다리지 않습니다. 즉 `Consumer`에 응답에 의존적이지 않습니다.
+- `Producer`는 `Consumer`가 특정 시점에 메시지 검색하고 처리할 것을 기대하고 Queue에 메시지를 보냅니다
+- `Consumer`는 `Queue`에서 메시지를 검색하고 처리하며, 여기서 `Producer`는 `Consumer`의 존재나 메시지가 어떻게 process 되는지 알지 못하며 `Consumer`의 응답을 기다리지 않습니다. 즉 `Consumer`에 응답에 의존적이지 않습니다.
 
 ### Request/Response Messaging
 ![Request/Response Messaging](images/pattern-request-response.jpeg)
 - `Consumer`가 Response message를 보낼 별도의 Message Quqeue 형태의 Communication channel이 필요합니다
-- `Producer`는 Reuqest Queue에 메세지를 보낸 뒤 Reply Queue로부터 Response를 기다립니다.
+- `Producer`는 Reuqest Queue에 메시지를 보낸 뒤 Reply Queue로부터 Response를 기다립니다.
 - `Consumer`는 메시지를 처리한 다음에 Reply Queue에 Response 메시지를 전달합니다
 - 만약 Response가 설정해놓은 time interval 안에 도착하지 않는다면 Producer는 둘 중 하나를 선택할 수 있습니다:
     - 메시지를 다시 보냅니다
@@ -62,9 +61,9 @@
 
 ### Pub/Sub
 ![Pub/Sub](images/pattern-pub-sub.jpeg)
-- `Publisher`는 Topic에 메세지를 발행하고, 누가 받는지는 알 필요가 없습니다
-- `Subscriber`는 관심 있는 Topic을 구독하고, 해당 Topic에 발행된 모든 메세지를 수신합니다
-- 하나의 메세지가 여러 `Subscriber`에 전달될 수 있습니다(1:N)
+- `Publisher`는 Topic에 메시지를 발행하고, 누가 받는지는 알 필요가 없습니다
+- `Subscriber`는 관심 있는 Topic을 구독하고, 해당 Topic에 발행된 모든 메시지를 수신합니다
+- 하나의 메시지가 여러 `Subscriber`에 전달될 수 있습니다(1:N)
 - `Subscriber`는 언제든 구독을 시작하거나 중단할 수 있으며, `Publisher`의 동작에는 영향을 주지 않습니다.
 
 ---
