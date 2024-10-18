@@ -76,9 +76,79 @@ public class ReservePaymentService {
 
 이 예시에서는 Kafka를 사용하여 예약 및 결제 처리를 위한 메시지 큐 패턴을 구현하고 있습니다. KafkaConsumerConfig는 Kafka 소비자 설정을, KafkaConsumerService는 메시지 수신 및 처리를, ReservePaymentService는 결제 처리 및 메시지 발행을 담당합니다.
 
+## 3. RabbitMQ를 사용한 메시지 큐 구현
+
+### 디렉토리 구조
+![RabbitMQ디렉토리](images/image3.png)
+
+**RabbitConfiguration.java**
+```
+@Configuration
+public class RabbitConfiguration {
+
+    @Bean
+    public Queue queue() {
+        return new Queue("reservationQueue", false);
+    }
+
+    @Bean
+    public TopicExchange exchange() {
+        return new TopicExchange("reservationExchange");
+    }
+
+    @Bean
+    public Binding binding(Queue queue, TopicExchange exchange) {
+        return BindingBuilder.bind(queue).to(exchange).with("reservation.#");
+    }
+}
+```
+
+이 설정 클래스는 RabbitMQ를 위한 기본 설정을 제공합니다:
+- 'reservationQueue'라는 이름의 큐를 생성합니다.
+- 'reservationExchange'라는 이름의 토픽 교환기를 생성합니다.
+- 큐와 교환기를 'reservation.#' 라우팅 키로 바인딩합니다.
 
 
-## 3. MSA에서 메시지 큐 구현 시 고려사항
+**ReservationService.java**
+```
+@Service
+@RequiredArgsConstructor
+public class ReservationService {
+
+    private final RabbitTemplate rabbitTemplate;
+
+    public void sendReservationMessage(ReservationDto reservationDto) {
+        rabbitTemplate.convertAndSend("reservationExchange", "reservation.created", reservationDto);
+    }
+
+    @RabbitListener(queues = "reservationQueue")
+    public void receiveReservationMessage(ReservationDto reservationDto) {
+        // 메시지 처리 로직
+        System.out.println("Received reservation: " + reservationDto);
+    }
+}
+```
+
+이 서비스 클래스는 RabbitMQ를 통한 메시지 송수신을 담당합니다:
+- sendReservationMessage 메소드는 예약 정보를 RabbitMQ로 전송합니다.
+- receiveReservationMessage 메소드는 RabbitMQ로부터 메시지를 수신하고 처리합니다.
+
+
+**application.yml**
+```
+spring:
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+```
+이 설정 파일은 RabbitMQ 연결 정보를 제공합니다.
+
+이 구현에서는 RabbitMQ를 사용하여 예약 시스템의 메시지 큐를 구현하고 있습니다. 예약이 생성되면 메시지가 RabbitMQ로 전송되고, 다른 서비스에서 이 메시지를 수신하여 처리할 수 있습니다. 이러한 방식으로 MSA 환경에서 서비스 간 비동기 통신을 구현하여 시스템의 확장성과 유연성을 향상시킬 수 있습니다.
+
+
+## 4. MSA에서 메시지 큐 구현 시 고려사항
 
 MSA에서 메시지 큐를 구현할 때 다음 사항들을 고려해야 합니다:
 
@@ -92,7 +162,7 @@ MSA에서 메시지 큐를 구현할 때 다음 사항들을 고려해야 합니
 
 
 
-## 4. egovframe-msa-edu-kenu 프로젝트의 모니터링 방법
+## 5. egovframe-msa-edu-kenu 프로젝트의 모니터링 방법
 
 egovframe-msa-edu-kenu 프로젝트에서는 Spring Boot Actuator와 Prometheus를 사용하여 모니터링을 구현하고 있습니다.
 
