@@ -1,6 +1,6 @@
 ## 데이터 일관성(Data Consistency)
 
-![[image00.png]]
+![](./image/image00.png)
 
 ### 데이터 불일치로 인한 서비스 장애
 
@@ -12,13 +12,13 @@
 
 ## 데이터 일관성의 중요성
 
-![[image01.png]]
+![](./image/image01.png)
 
 ## 데이터 일관성 유지 방법
 
 ### 2PC 패턴 
 
-![[image03.png]]
+![](./image/image02.png)
 
 - 아래 코드는 유저가 계좌 A에서 계좌 B로 자금을 이체하는 예제이다.
 
@@ -90,7 +90,7 @@ public class TransferService {
 
 ###  SAGA 패턴
 
-![[image02.png]]
+![](./image/image03.png)
 
 - 아래 코드는 SAGA 패턴을 이용해 주문, 결제, 배송 서비스를 관리하는 예제이다.
 
@@ -132,7 +132,7 @@ class PaymentService {
 
 #### Choreography ➡️ 분산
 
-![[image04.png]]
+![](./image/image04.png)
 
 - 각 서비스가 독립적으로 이벤트에 반응하여 다음 작업을 수행하는 방식이다.
 
@@ -140,7 +140,7 @@ class PaymentService {
 
 #### Orchestration ➡️ 집중
 
-![[image05.png]]
+![](./image/image05.png)
 
 - 중앙의 오케스트레이터가 트랜잭션의 전체 흐름을 관리하며, 각 서비스에게 명령을 내려 트랜잭션을 처리하는 방식이다.
 
