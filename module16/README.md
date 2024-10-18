@@ -17,7 +17,7 @@
 egovframe-msa-edu-kenu 프로젝트에서 메시지 큐 패턴이 적용된 사례를 살펴보겠습니다.
 
 ### 디렉토리 구조
-![messageQue디렉토리](C:\Users\tlalw\Downloads\egovmsa2024\egovmsa2024\module16\images.png)
+![messageQue디렉토리](C:\Users\tlalw\Downloads\egovmsa2024\egovmsa2024\module16\images\images.png)
 
 ### 구현 코드
 
@@ -97,7 +97,7 @@ MSA에서 메시지 큐를 구현할 때 다음 사항들을 고려해야 합니
 egovframe-msa-edu-kenu 프로젝트에서는 Spring Boot Actuator와 Prometheus를 사용하여 모니터링을 구현하고 있습니다.
 
 ### 디렉토리 구조
-![모니터링디렉토리](C:\Users\tlalw\Downloads\egovmsa2024\egovmsa2024\module16\images.png)
+![모니터링디렉토리](C:\Users\tlalw\Downloads\egovmsa2024\egovmsa2024\module16\images\images.png)
 
  
 **ActuatorConfig.java**
