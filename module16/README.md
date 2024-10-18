@@ -22,12 +22,55 @@ egovframe-msa-edu-kenu 프로젝트에서 메시지 큐 패턴이 적용된 사�
 ### 구현 코드
 
 **KafkaConsumerConfig.java**
+```
+@Configuration
+@EnableKafka
+public class KafkaConsumerConfig {
+    @Bean
+    public ConsumerFactory<String, String> consumerFactory() {
+        Map<String, Object> props = new HashMap<>();
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        props.put(ConsumerConfig.GROUP_ID_CONFIG, "group-id");
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        return new DefaultKafkaConsumerFactory<>(props);
+    }
+
+    @Bean
+    public ConcurrentKafkaListenerContainerFactory<String, String> kafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, String> factory = new ConcurrentKafkaListenerContainerFactory<>();
+        factory.setConsumerFactory(consumerFactory());
+        return factory;
+    }
+}
+```
 
 
 **KafkaConsumerService.java**
-
+```
+@Service
+public class KafkaConsumerService {
+    @KafkaListener(topics = "reservationTopic", groupId = "group-id")
+    public void consume(String message) {
+        System.out.println("Received message: " + message);
+        // 메시지 처리 로직
+    }
+}
+```
 
 **ReservePaymentService.java**
+```
+@Service
+public class ReservePaymentService {
+    @Autowired
+    private KafkaTemplate<String, String> kafkaTemplate;
+
+    public void processPayment(String reservationData) {
+        // 결제 처리 로직
+        kafkaTemplate.send("paymentTopic", reservationData);
+    }
+}
+```
 
 
 
@@ -58,13 +101,41 @@ egovframe-msa-edu-kenu 프로젝트에서는 Spring Boot Actuator와 Prometheus�
 
  
 **ActuatorConfig.java**
-
+```
+@Configuration
+public class ActuatorConfig {
+    @Bean
+    public MeterRegistryCustomizer<MeterRegistry> metricsCommonTags() {
+        return registry -> registry.config().commonTags("application", "message-queue-consumer");
+    }
+}
+```
 
 
 **#application.yml**
-
+```
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+```        
 
 **prometheus.yml**
+```
+global:
+  scrape_interval: 15s
+
+scrape_configs:
+  - job_name: 'spring-actuator'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['localhost:8080']
+```      
 
 
 
