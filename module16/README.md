@@ -43,22 +43,29 @@
 - 실시간 스트리밍 처리와 데이터 파이프라인 구축에 적합합니다.
 - ex) Apache Kafka, Apache Pulsar
 
-## 4. 메시지 큐의 장점
+## 4. 메시징 패턴
+### One-way Messaging
+![One-way Messaging](images/pattern-one-way.jpeg)
+- point-to-point messaging
+- `Producer`는 `Consumer`가 특정 시점에 메세지 검색하고 처리할 것을 기대하고 Queue에 메세지를 보냅니다
+- `Consumer`는 `Queue`에서 메세지를 검색하고 처리하며, 여기서 `Producer`는 `Consumer`의 존재나 메세지가 어떻게 process 되는지 알지 못하며 `Consumer`의 응답을 기다리지 않습니다. 즉 `Consumer`에 응답에 의존적이지 않습니다.
 
-### 비동기
+### Request/Response Messaging
+![Request/Response Messaging](images/pattern-request-response.jpeg)
+- `Consumer`가 Response message를 보낼 별도의 Message Quqeue 형태의 Communication channel이 필요합니다
+- `Producer`는 Reuqest Queue에 메세지를 보낸 뒤 Reply Queue로부터 Response를 기다립니다.
+- `Consumer`는 메시지를 처리한 다음에 Reply Queue에 Response 메시지를 전달합니다
+- 만약 Response가 설정해놓은 time interval 안에 도착하지 않는다면 Producer는 둘 중 하나를 선택할 수 있습니다:
+    - 메시지를 다시 보냅니다
+    - Timeout 처리를 합니다
 
-Producer는 메시지를 Consumer에게 직접 전달하지 않고 Queue에 넣어 관리합니다. <br/>
--> Consumer는 자신의 처리 속도에 맞춰 비동기적으로 메시지를 처리할 수 있고, Producer는 메시지를 큐에 넣은 후 즉시 다른 작업을 수행할 수 있어 시스템 전체의 효율성이 향상됩니다.
 
-### 낮은 결합도
-
-Producer와 Consumer는 메시지 큐와의 인터페이스만 알면 됩니다. 즉, 메시지를 어떻게 보내고 받는지에 대한 프로토콜만 이해하면 되므로 서로의 존재나 구현 세부사항을 알 필요가 없어집니다.<br>
--> 시스템의 유연성을 크게 높이며, 각 컴포넌트를 독립적으로 개발, 테스트, 배포할 수 있게 합니다. 또한 시스템의 한 부분을 변경하더라도 다른 부분에 미치는 영향을 최소화할 수 있습니다.
-
-### 확장성
-
-기존 메시지 큐를 이용한 통신에 부하가 증가하거나 클라이언트의 동시다발적인 요청이 증가할 때, 메시지 큐에 Producer와 Consumer를 추가함으로써 비교적 간단하고 쉽게 확장이 가능합니다. (=수평적 확장을 통해 시스템의 처리량을 증가시킬 수 있습니다.)
-클라우드 환경에서는 필요에 따라 자동으로 Producer나 Consumer를 스케일링할 수 있습니다.
+### Pub/Sub
+![Pub/Sub](images/pattern-pub-sub.jpeg)
+- `Publisher`는 Topic에 메세지를 발행하고, 누가 받는지는 알 필요가 없습니다
+- `Subscriber`는 관심 있는 Topic을 구독하고, 해당 Topic에 발행된 모든 메세지를 수신합니다
+- 하나의 메세지가 여러 `Subscriber`에 전달될 수 있습니다(1:N)
+- `Subscriber`는 언제든 구독을 시작하거나 중단할 수 있으며, `Publisher`의 동작에는 영향을 주지 않습니다.
 
 ---
 # MSA에서의 메시지 큐와 모니터링
