@@ -1,3 +1,72 @@
+# 메시지 큐
+
+## 0. 메시지 지향 미들웨어(MOM)
+
+응용 소프트웨어 간의 비동기적 데이터 통신을 위한 소프트웨어로, 사용 시 다음과 같은 장점을 가집니다:
+
+- 메시지의 백업 기능을 유지함으로 지속성을 제공하기에 송수신 측은 동시에 네트워크 연결을 유지할 필요가 없습니다.
+- 메시지 라우팅을 수행하기에 하나의 메시지를 여러 수신자에게 배포가 가능합니다.
+- 송수신 측의 요구에 따라 전달하는 메시지를 변환할 수 있습니다.
+
+## 1. 메시지 큐
+
+큐 자료구조를 채택해서 메시지를 전달하는 시스템이며, 메시지 지향 미들웨어(MOM)를 구현한 시스템입니다.
+
+메시지 큐는 메시지를 발행하고 전달하는 부분인`Producer`와 메시지를 받아서 소비하는 부분인`Consumer` 사이의 메시지 전달 역할을 하는 매개체입니다.
+
+## 2. 메시지 큐의 종류
+| 이름 | 특징 | 사용 시나리오 | 사용 예시 |
+|------|------|---------------|-----------|
+| Kafka | • 초고속 대용량 데이터 처리에 특화<br>• 데이터 유실 방지를 위한 복제 기능<br>• 확장이 용이한 분산 시스템 구조 | • 대용량 실시간 로그 및 이벤트 처리<br>• 스트림 처리 애플리케이션 | • LinkedIn: 사용자 활동 추적 및 로그 관리<br>• Netflix: 실시간 추천 시스템 및 모니터링 |
+| RabbitMQ | • 다양한 메시징 방식 지원(1대1, 1대다 등)<br>• 유연한 라우팅으로 복잡한 메시지 흐름 처리 가능 | • 복잡한 라우팅이 필요한 워크플로우<br>• 다양한 시스템 간 연동 필요 시 | • Mozilla: 데이터 동기화 및 알림 시스템 |
+| ActiveMQ | • JMS 완벽 지원<br>• 다양한 언어 및 프로토콜 지원 | • JAVA 기반 엔터프라이즈 애플리케이션<br>• 다중 프로토콜 지원이 필요한 환경 | • Amazon: 주문 처리 시스템 일부 |
+| Redis | • 인메모리 데이터 구조로 빠른 처리 속도<br>• 단순하고 가벼운 메시징 시스템 | • 실시간 알림 시스템 구축 시<br>• 낮은 지연 시간, 처리 속도 중요 시 | • Twitter: 실시간 타임라인 업데이트 |
+
+
+
+## 3. 메시지 브로커 VS 이벤트 브로커
+
+메시지 큐에서 데이터를 운반하는 방식에 따라 메시지 브로커와 이벤트 브로커로 나눌 수 있습니다.
+
+### 메시지 브로커
+
+- Consumer가 메시지 큐에서 데이터를 가져가면 짧은 시간 내에 메시지 큐에서 데이터가 삭제됩니다.
+- 일회성 작업에 대한 메시지를 다룹니다.
+- 하나의 Consumer가 메시지를 처리할 수 있게 함으로써 `One-way Messaging`이나 `Request/Response Messaging`패턴에 적합합니다.
+- ex) RabbitMQ, ActiveMQ, AWS SQS, Redis(Queue)
+
+### 이벤트 브로커
+
+- Consumer가 메시지 큐에서 데이터를 가져가도 삭제되지 않으며, 필요한 경우 재사용할 수 있습니다.
+- 여러 Consumer가 동일한 메시지를 독립적으로 처리할 수 있게 함으로써 `Pub/Sub`패턴에 적합합니다.
+- 메시지 브로커보다 대용량 데이터를 처리할 수 있는 능력이 있습니다.
+- ex) Apache Kafka, Apache Pulsar, Redis(Pub/Sub)
+
+## 4. 메시징 패턴
+### One-way Messaging
+![One-way Messaging](images/pattern-one-way.jpeg)
+- point-to-point messaging
+- `Producer`는 `Consumer`가 특정 시점에 메시지 검색하고 처리할 것을 기대하고 Queue에 메시지를 보냅니다
+- `Consumer`는 `Queue`에서 메시지를 검색하고 처리하며, 여기서 `Producer`는 `Consumer`의 존재나 메시지가 어떻게 process 되는지 알지 못하며 `Consumer`의 응답을 기다리지 않습니다. 즉 `Consumer`에 응답에 의존적이지 않습니다.
+
+### Request/Response Messaging
+![Request/Response Messaging](images/pattern-request-response.jpeg)
+- `Consumer`가 Response message를 보낼 별도의 Message Quqeue 형태의 Communication channel이 필요합니다
+- `Producer`는 Reuqest Queue에 메시지를 보낸 뒤 Reply Queue로부터 Response를 기다립니다.
+- `Consumer`는 메시지를 처리한 다음에 Reply Queue에 Response 메시지를 전달합니다
+- 만약 Response가 설정해놓은 time interval 안에 도착하지 않는다면 Producer는 둘 중 하나를 선택할 수 있습니다:
+    - 메시지를 다시 보냅니다
+    - Timeout 처리를 합니다
+
+
+### Pub/Sub
+![Pub/Sub](images/pattern-pub-sub.jpeg)
+- `Publisher`는 Topic에 메시지를 발행하고, 누가 받는지는 알 필요가 없습니다
+- `Subscriber`는 관심 있는 Topic을 구독하고, 해당 Topic에 발행된 모든 메시지를 수신합니다
+- 하나의 메시지가 여러 `Subscriber`에 전달될 수 있습니다(1:N)
+- `Subscriber`는 언제든 구독을 시작하거나 중단할 수 있으며, `Publisher`의 동작에는 영향을 주지 않습니다.
+
+---
 # MSA에서의 메시지 큐와 모니터링
 
 ## 1. MSA에서 메시지 큐의 역할
