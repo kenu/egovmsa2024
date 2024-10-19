@@ -2,7 +2,7 @@
 
 해당 글은 노션 기준으로 작성되었습니다.
  https://smoggy-client-47f.notion.site/API-10e5cbc9c488801bb93ed0af08eeca02?pvs=4
- 
+
 ![image.png](./images/image.png)
 
 # 1. MicroService Architecture (MSA)
@@ -76,10 +76,10 @@ MSA는 큰 서비스를 잘게 쪼개어 개발/운영하는 아키텍처이다.
 API Gateway는 API 서버 앞단에서 모든 API 서버들의 엔드포인트를 단일화 해주는 또다른 서버이다. API에 대한 인증과 인가 기능을 가지고 있으며, 메세지의 내용에 따라 어플리케이션 내부에 있는 마이크로 서비스로 라우팅하는 역할을 담당한다.
 
 > API Gateway의 시작은 SOA의 핵심 인프라라고 할 수 있는 ESB(Enterprise Service Bus)에서 시작되었다. 따라서 API Gateway의 많은 부분들이 ESB로 부터 승계되었는데!
-> 
-> 
+>
+>
 > ESB가 SOAP/XML 기반의 무거운 기능을 가졌다면, API Gateway는 REST/JSON 기반으로 보다 가볍게 설계된 것이 특징이다.
-> 
+>
 
 ## 2.3. API Gateway의 주요 기능 (해결)
 
@@ -99,10 +99,10 @@ API Gateway는 API 서버 앞단에서 모든 API 서버들의 엔드포인트�
 이러한 이유로 인증서 관리나, 인증, SSL, 프로토콜 변환과 같은 기능들은 API Gateway에서 오프로드 함으로, 각각의 서비스의 부담을 줄이고, 서비스의 관리 및 업그레이드를 보다 쉽게 할 수 있게 한다.
 
 > **Authentication(인증)과 Authorization(인가)의 차이**
-> 
-> 
+>
+>
 > Authentication은 유저가 누구인지 확인하는 절차(A라고 하며 접근하는 사람이 진짜 A인지 확인하는 절차)이고, Authorization은 어떠한 유저가 특정 자원에 접근하려 할때, 그에대한 접근 권한이 있는지 확인하는 절차이다.
-> 
+>
 
 ### 2. 요청 절차의 단순화
 
@@ -183,7 +183,7 @@ API 게이트웨이의 기본 아키텍처는 클라이언트와 백엔드 서�
 
 ### **2.6.1 서비스 메시(Service Mesh)**
 
-API 게이트웨이는 **서비스 메시(Service Mesh)**와 상호보완적인 관계를 가진다. 서비스 메시가 마이크로서비스 간의 통신을 관리하는 반면, API 게이트웨이는 외부 클라이언트와 서비스 간의 통신을 처리한다.
+API 게이트웨이는 **서비스 메시(Service Mesh)** 와 상호보완적인 관계를 가진다. 서비스 메시가 마이크로서비스 간의 통신을 관리하는 반면, API 게이트웨이는 외부 클라이언트와 서비스 간의 통신을 처리한다.
 
 ### **2.6.2 리버스 프록시**
 
@@ -230,12 +230,12 @@ API 게이트웨이는 **리버스 프록시**와 유사하지만, 더 많은 �
 
 ![https://www.msaschool.io/assets/static/image3.5afd69e.19d4092a522bca10ca3b264d93a09f56.png](https://www.msaschool.io/assets/static/image3.5afd69e.19d4092a522bca10ca3b264d93a09f56.png)
 
-API Gateway는 클라이언트 앱의 다양한 요구 사항에 따라 API가 증가할 수 있으며, 단일 API Gateway가 모든 내부 마이크로서비스를 호출하면 기존의 모놀리식 아키텍처와 유사해질 위험이 있다. 이를 방지하기 위해, 클라이언트 앱별로 API Gateway를 분할하는 것이 좋다. 여러 개의 API Gateway를 사용하면 다양한 클라이언트 앱이나 비즈니스 로직에 따라 다른 응답을 처리할 수 있으며, 이를 BFF(Backend for Frontend) 패턴이라고 한다.
+API Gateway는 클라이언트 앱의 다양한 요구 사항에 따라 API가 증가할 수 있으며, 단일 API Gateway가 모든 내부 마이크로서비스를 호출하면 기존의 모놀리식 아키텍처와 유사해질 위험이 있다. 이를 방지하기 위해, 클라이언트 앱별로 API Gateway를 분할하는 것이 좋다.
+
+여러 개의 API Gateway를 사용하면 다양한 클라이언트 앱이나 비즈니스 로직에 따라 다른 응답을 처리할 수 있으며, 이를 BFF(Backend For Frontend) 패턴이라고 한다.
 
 ## 참고자료
 
-[https://www.msaschool.io/operation/architecture/architecture-one/](https://www.msaschool.io/operation/architecture/architecture-one/)
-
-[https://bcho.tistory.com/1005](https://bcho.tistory.com/1005)
-
-[https://velog.io/@combi_jihoon/aws-서비스-정리-API-Gateway](https://velog.io/@combi_jihoon/aws-%EC%84%9C%EB%B9%84%EC%8A%A4-%EC%A0%95%EB%A6%AC-API-Gateway)
+- https://www.msaschool.io/operation/architecture/architecture-one/
+- https://bcho.tistory.com/1005
+- https://velog.io/@combi_jihoon/aws-서비스-정리-API-Gateway

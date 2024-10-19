@@ -181,6 +181,6 @@ messages:
 
 
 ### 참고
-https://velog.io/@sh93/%EC%98%A4%ED%94%88%EC%86%8C%EC%8A%A4-Gateway-%EB%B9%84%EA%B5%90
-https://www.cloudflare.com/ko-kr/learning/security/api/what-is-an-api-gateway/
-
+- https://velog.io/@sh93/%EC%98%A4%ED%94%88%EC%86%8C%EC%8A%A4-Gateway-%EB%B9%84%EA%B5%90
+- https://www.cloudflare.com/ko-kr/learning/security/api/what-is-an-api-gateway/
+- https://github.com/msa-ez/airbnb_project

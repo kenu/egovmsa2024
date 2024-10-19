@@ -1,3 +1,4 @@
+# 쿠버네티스
 - [1. 쿠버네티스란? (Kubernetes)](#1-쿠버네티스란-kubernetes)
 - [2. 등장 배경](#2-등장-배경)
     - [문제](#문제)
@@ -37,7 +38,7 @@
 
 ### 문제
 
-> Traditional Deplooyment(전통적인 배포 시대)
+> Traditional Deployment(전통적인 배포 시대)
 > → Virtualized Deployment(가상화된 배포 시대)
 > → Container Deployment(컨테이너 개발 시대)
 
@@ -57,7 +58,7 @@
 - 스토리지 오케스트레이션
 - 자동화된 롤아웃과 롤백
 - 자동화된 빈 패킹(bin packing)
-- 자동화된 복구(self-healing)
+- **자동화된 복구(self-healing)**
 - 시크릿과 구성 관리
 
 # 3. 쿠버네티스 아키텍처
@@ -70,7 +71,7 @@
 
 > 클러스터에 관한 전반적인 결정을 수행하고 클러스터 이벤트를 감지하고 반응합니다.
 
-- `kube-apiserver` : 쿠버네티스 API 서버이자 쿠버네티스 controle plane의 프론트 엔드
+- `kube-apiserver` : 쿠버네티스 API 서버이자 쿠버네티스 control plane의 프론트엔드
 - `etcd` : 모든 클러스터 데이터를 저장하는 저장소. key-value 형태로 데이터를 저장
 - `kube-scheduler` : 새로 생성된 파드를 감지하고 실행할 노드 선택
 - `kube-controller-manager` : 컨트롤러 프로세스를 실행
@@ -279,16 +280,6 @@ backend/
 
 이러한 구성을 통해 안정적이고 확장 가능한 데이터베이스 환경을 제공하며, 마이크로서비스 아키텍처의 중요한 데이터 저장소 역할을 수행합니다.
 
-### Logging: ELK 스택
-
-로깅 시스템은 `ELK (Elasticsearch, Logstash, Kibana)` 스택으로 구성되어 있습니다.
-
-- **Elasticsearch**: 로그 데이터를 저장하고 검색할 수 있는 강력한 검색 및 분석 엔진입니다.
-- **Logstash**: 로그를 수집하고 Elasticsearch로 전달하기 전에 필터링하고 변환합니다.
-- **Kibana**: Elasticsearch에 저장된 로그 데이터를 시각화하고 분석할 수 있는 도구입니다.
-
-이 구성은 마이크로서비스 아키텍처에서 로그 데이터를 효율적으로 수집하고 분석할 수 있게 해주며, 문제 발생 시 빠르게 원인을 파악할 수 있는 환경을 제공합니다.
-
 ### RabbitMQ
 
 메시지 브로커인 RabbitMQ는 마이크로서비스 간의 비동기 통신을 담당합니다. Ingress 설정을 통해 외부 접근을 관리하고, 안정적인 메시징 환경을 제공합니다.
@@ -310,6 +301,17 @@ NFS는 여러 노드에서 동시에 접근 가능한 공유 스토리지를 제
 - **StorageClass 정의**: 'nfs'라는 이름의 StorageClass를 생성하여, PVC가 동적으로 NFS 기반의 PV를 요청할 수 있도록 설정합니다.
 
 이 구성은 Kubernetes 클러스터에서 NFS 스토리지를 동적으로 프로비저닝할 수 있는 환경을 제공하며, 안전하고 효율적인 스토리지 관리가 가능합니다.
+
+### Logging: ELK 스택
+
+로깅 시스템은 `ELK (Elasticsearch, Logstash, Kibana)` 스택으로 구성되어 있습니다.
+
+- **Elasticsearch**: 로그 데이터를 저장하고 검색할 수 있는 강력한 검색 및 분석 엔진입니다.
+- **Logstash**: 로그를 수집하고 Elasticsearch로 전달하기 전에 필터링하고 변환합니다.
+- **Kibana**: Elasticsearch에 저장된 로그 데이터를 시각화하고 분석할 수 있는 도구입니다.
+
+이 구성은 마이크로서비스 아키텍처에서 로그 데이터를 효율적으로 수집하고 분석할 수 있게 해주며, 문제 발생 시 빠르게 원인을 파악할 수 있는 환경을 제공합니다.
+
 
 ### Vagrant 환경 설정
 
