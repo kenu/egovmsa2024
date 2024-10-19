@@ -1,73 +1,218 @@
-### 1. 의도 (Intent)
+## 데이터 일관성(Data Consistency)
 
-![](./image/image1.png)
+![](./image/image00.png)
 
-이벤트 기반 아키텍처는 분산된 시스템 간 이벤트를 생성 발행하고 발행된 이벤트를 필요로 하는 수신자에게 전송하고 이벤트를 수신한 수신자가 이벤트를 처리하는 형태의 시스템 아키텍처입니다.
+### 데이터 불일치로 인한 서비스 장애
 
-EDA의 목적은 **분산 시스템**에서 발생하는 복잡한 데이터 흐름을 처리하고, 각 구성 요소가 이벤트에 따라 독립적으로 반응함으로써, 시스템의 확장성을 확보하고 복잡성을 줄이는 것입니다.
+- 서비스 간의 데이터 불일치가 발생할 경우 각 서비스가 서로 다른 정보를 바탕으로 동작하게 되어, 결제나 주문 같은 중요한 트랜잭션에 문제가 발생할 수 있다.
 
-### 이벤트 기반 마이크로서비스
+### 사용자 경험의 일관성 유지
 
-![](./image/image2.png)
+- 사용자는 각 서비스에서 일관된 정보를 기대한다.
 
-**Event Driven MicroService**란,
-MSA가 적용된 시스템에서 이벤트 발생시 해당 이벤트 로그를 보관하고 이를 기반으로 동작하며, 비동기 통신을 통해 시스템 내 통합을 수행하는 아키텍처입니다.
+## 데이터 일관성의 중요성
 
-### 2. 문제 (Problem)
+![](./image/image01.png)
 
-전통적인 **동기적 아키텍처**(모놀리식 구조나 RESTful API 기반 아키텍처)는 다음과 같은 문제를 가지고 있었습니다:
+## 데이터 일관성 유지 방법
 
-- **높은 결합도**: 서비스 간의 직접적인 호출로 인해, 각 서비스가 서로 강하게 결합되어 있어 유지보수와 확장이 어렵습니다.
-- **확장성의 한계**: 대규모 트래픽 증가나 다양한 이벤트 처리가 필요한 경우, 동기적 요청-응답 방식은 병목 현상을 야기하며 확장성이 떨어집니다.
-- **가용성 문제**: 특정 서비스가 다운되면, 다른 서비스도 영향을 받는 경우가 많아 전체 시스템의 안정성에 문제가 발생합니다.
+### 2PC 패턴 
 
-### 3. 해결법 (Solution)
+![](./image/image02.png)
 
-![](./image/image3.png)
+- 아래 코드는 유저가 계좌 A에서 계좌 B로 자금을 이체하는 예제이다.
 
-**이벤트 기반 아키텍처**는 이러한 문제들을 해결하기 위해 **비동기적 이벤트 처리** 방식을 도입했습니다. 각 서비스는 서로 **직접 통신하지 않고**, 특정 이벤트가 발생했을 때 **이벤트 브로커**(메시지 큐, Pub/Sub 시스템 등)를 통해 이벤트를 발행하고, 다른 서비스가 이를 **구독**하는 방식으로 동작합니다.
+```java
+public interface BankService {
+    void prepareTransfer(int amount);
+    void commit();
+    void rollback();
+}
 
-특징은 다음과 같습니다.
+@Component
+public class AccountAService implements BankService {
+	
+    // 계좌 A에서 금액을 차감하기 전의 준비 작업(계좌호출 차감 금액 확인등..)
+    @Override
+    public void prepareTransfer(int amount) {    
+        if(balance >= amount) {
+            balance -= amount;
+            return true;
+        } else {
+            return false; // 잔액 부족
+        }
+    }
+}
 
-- **느슨한 결합**을 유지하여 서비스 간 의존성을 최소화할 수 있습니다.
-- 각 서비스는 독립적으로 확장 가능하고, 이벤트가 발생할 때만 처리되므로 **효율적인 자원 사용**이 가능합니다.
-- 이벤트가 발생하면 각 서비스가 **비동기적**으로 이벤트를 처리하므로 서비스가 대기하지 않고, 전체 시스템의 **성능**과 **반응성**이 향상됩니다.
+@Component
+public class AccountBService implements BankService {
 
-## 4. 아키텍처
+	// 계좌 B로 입금하기 전의 준비 작업(입금 계좌 확인 및 금액 확인 등..)
+    @Override
+    public void prepareTransfer(int amount) {
+        balance += amount;
+        return true;
+    }
+}
 
-EDA는 시스템 내에서 발생하는 이벤트를 기반으로 상호작용하는 아키텍처 스타일입니다. 이벤트는 상태 변화나 작업의 발생을 의미하며, 시스템의 컴포넌트는 이벤트를 생성하거나 이를 소비(구독)하여 비동기적으로 동작합니다.
+@Service
+@RequiredArgsConstructor
+public class TransferService {
+    
+    private final AccountAService accountA;
+    private final AccountBService accountB;
 
-**구성 요소**
+    public void transfer(int amount) {
+        boolean isPrepared = accountA.prepareTransfer(amount) && accountB.prepareTransfer(amount);
 
-- **Event Producers (이벤트 생성자)**: 이벤트를 발생시키는 주체. 시스템 내에서 상태 변화가 발생할 때 이벤트를 생성하여 전달합니다. 예를 들어, 사용자가 상품을 구매하면 구매 이벤트가 생성됩니다.
-- **Event Consumers (이벤트 소비자)**: 이벤트를 구독하고, 해당 이벤트가 발생할 때 특정 작업을 수행하는 주체입니다. 소비자는 여러 이벤트를 동시에 구독할 수 있습니다.
-- **Event Channel**: 이벤트가 전송되는 경로로, 메시지 브로커(예: Kafka, RabbitMQ) 등이 이벤트를 중개합니다. 이를 통해 이벤트가 생성자에서 소비자에게 전달됩니다.
-- **Event Stream Processing**: 실시간으로 이벤트 스트림을 처리하며, 이벤트를 실시간으로 분석하고 반응하는 프로세스입니다.
+        if (isPrepared) {
+            accountA.commit();
+            accountB.commit();
+        } else {
+            accountA.rollback();
+            accountB.rollback();
+        }
+    }
+}
+```
 
-## 5. 장단점
+- Prepare Phase : 
 
-- **장점**:
-    - **비동기 처리**: 서비스들이 비동기적으로 이벤트를 주고받기 때문에, 시스템이 느린 서비스나 장애 서비스에 종속되지 않고 유연하게 동작할 수 있습니다.
-    - **확장성**: 새로운 이벤트 소비자를 추가하거나 제거하는 것이 용이해 확장성과 유연성을 확보할 수 있습니다.
-    - **실시간 반응**: 이벤트가 발생하는 즉시 반응할 수 있어, 실시간 처리 및 대응이 가능합니다.
-    - **느슨한 결합**: 서비스 간 의존성이 낮아져 변경 사항이 있더라도 시스템 전체에 영향을 주지 않으며, 서비스 독립성이 높아집니다.
-- **단점**:
-    - **복잡성 증가**: 시스템 내에서 발생하는 이벤트의 흐름을 파악하고 관리하는 것이 어려워질 수 있으며, 디버깅 및 트러블슈팅이 복잡해집니다.
-    - **데이터 일관성 문제**: 비동기적으로 데이터가 처리되기 때문에, 데이터의 일관성을 즉시 보장하기 어렵습니다. 결국 분산 트랜잭션 관리가 필요할 수 있습니다.
-    - **메시지 중개 시스템 의존**: 이벤트를 처리하기 위한 메시지 브로커나 이벤트 스트림 처리 시스템의 설정과 관리가 필요하며, 추가적인 인프라 비용이 발생할 수 있습니다.
-    - **순서 보장 문제**: 이벤트 처리 순서를 보장하는 데 추가적인 설계와 노력이 필요할 수 있습니다.
+	- 트랜잭션 매니저(TM)가 모든 리소스 매니저(RM)에게 트랜잭션 커밋 준비를 요청한다.
 
-## 6. 다른 기술과의 관계
+	- 각 RM은 해당 요청을 받아 필요한 작업을 준비한 후, 준비 완료를 TM에게 알린다.
 
-- **메시지 브로커**: 이벤트 기반 아키텍처는 메시지 브로커와 밀접하게 연관되어 있습니다. Kafka, RabbitMQ와 같은 메시지 브로커는 이벤트 생성자와 소비자 간의 비동기 통신을 가능하게 하고, 이벤트 전송, 큐잉, 스트리밍을 처리합니다.
-- **마이크로서비스 아키텍처(MSA)**: EDA는 MSA와 함께 자주 사용됩니다. MSA에서 각 서비스는 독립적으로 동작하며, 이벤트를 통해 서로 통신할 수 있습니다. 이로써 마이크로서비스 간의 느슨한 결합을 유지하고 유연성을 극대화할 수 있습니다.
-- **클라우드 컴퓨팅**: EDA는 클라우드 환경과 잘 어울립니다. AWS의 Lambda와 SQS, Azure Event Grid, Google Pub/Sub과 같은 클라우드 서비스는 이벤트 기반 애플리케이션을 쉽게 구축할 수 있는 도구와 플랫폼을 제공합니다.
-- **서버리스(Serverless)**: 서버리스 환경에서 이벤트 기반 아키텍처가 자주 사용됩니다. 서버리스 함수는 이벤트가 발생했을 때 실행되므로, 이벤트 기반으로 유연하게 애플리케이션을 확장할 수 있습니다.
-- **데이터 스트림 처리**: Apache Kafka Streams, Apache Flink 같은 스트리밍 데이터 처리 도구는 EDA에서 실시간으로 이벤트 스트림을 분석하고 처리하는 데 사용됩니다.
+- Commit & Rollback Phase : 
 
-## 7. 레퍼런스
+	- 모든 RM이 준비 완료를 통보하면 TM은 트랜잭션을 커밋한다.
 
-- https://aws.amazon.com/ko/what-is/eda/
-- https://cloud.google.com/eventarc/docs/event-driven-architectures?hl=ko
-- https://f-lab.kr/insight/understanding-event-driven-architecture
-- https://aws.amazon.com/ko/event-driven-architecture/
+	- 이때 준비되지 않은 RM이 있는 경우 TM은 트랜잭션을 롤백한다.
+
+###  SAGA 패턴
+
+![](./image/image03.png)
+
+- 아래 코드는 SAGA 패턴을 이용해 주문, 결제, 배송 서비스를 관리하는 예제이다.
+
+```java
+class OrderService {
+    public void createOrder(Order order) {
+        try {
+            // 주문 생성 로직
+            orderRepository.save(order);
+            // 결제 서비스 호출
+            paymentService.processPayment(order);
+        } catch (Exception e) {
+            // 롤백 로직
+            orderRepository.delete(order);
+            throw e;
+        }
+    }
+}
+
+class PaymentService {
+    public void processPayment(Order order) {
+        try {
+            // 결제 처리 로직
+            paymentRepository.save(order);
+            // 배송 서비스 호출
+            shippingService.shipOrder(order);
+        } catch (Exception e) {
+            // 롤백 로직
+            paymentRepository.delete(order);
+            throw e;
+        }
+    }
+}
+```
+
+- SAGA 패턴은 각 서비스가 독립적으로 트랜잭션을 처리하고, 트랜잭션이 완료되면 다음 서비스로 이벤트를 전달하는 방식이다.
+
+- 만약 트랜잭션이 실패하면, 이전 서비스로 롤백 이벤트를 전달하여 상태를 복구한다. 
+
+#### Choreography ➡️ 분산
+
+![](./image/image04.png)
+
+- 각 서비스가 독립적으로 이벤트에 반응하여 다음 작업을 수행하는 방식이다.
+
+- 각 서비스는 다른 서비스에서 발생한 이벤트를 감지하고, 그에 따라 자신이 해야 할 작업을 처리한다.
+
+#### Orchestration ➡️ 집중
+
+![](./image/image05.png)
+
+- 중앙의 오케스트레이터가 트랜잭션의 전체 흐름을 관리하며, 각 서비스에게 명령을 내려 트랜잭션을 처리하는 방식이다.
+
+### 이벤트 소싱
+
+- 아래 코드는 이벤트 소싱을 이용해 주문과 결제 서비스를 관리하는 예제이다.
+
+```java
+class OrderService {
+    public void createOrder(Order order) {
+        // 주문 생성 이벤트 생성
+        OrderCreatedEvent event = new OrderCreatedEvent(order);
+        // 이벤트 스토어에 저장
+        eventStore.save(event);
+        // 이벤트 브로커를 통해 이벤트 전파
+        eventBroker.publish(event);
+    }
+}
+
+class PaymentService {
+    public void onOrderCreated(OrderCreatedEvent event) {
+        // 결제 처리 로직
+        Payment payment = new Payment(event.getOrder());
+        paymentRepository.save(payment);
+        // 결제 완료 이벤트 생성
+        PaymentCompletedEvent paymentEvent = new PaymentCompletedEvent(payment);
+        // 이벤트 스토어에 저장
+        eventStore.save(paymentEvent);
+        // 이벤트 브로커를 통해 이벤트 전파
+        eventBroker.publish(paymentEvent);
+    }
+}
+```
+
+- 이벤트 소싱은 데이터의 상태를 이벤트 시퀀스로 저장하고, 이를 통해 현재 상태를 재구성하는 방식이다.
+
+- 이러한 방식은 데이터 변경 이력을 모두 기록하므로 데이터 일관성을 유지할 수 있다.
+
+- 이벤트 소싱의 과정은 다음과 같습니다 :
+
+	- 각 서비스가 이벤트를 생성한다.
+
+	- 생성된 이벤트를 이벤트 스토어에 저장한다.
+
+	- 다른 서비스는 이벤트 스토어에서 이벤트를 읽어와 자신의 상태를 업데이트한다.
+
+	- 이 과정을 통해 여러 서비스 간의 데이터 일관성을 유지한다.
+
+### ETC
+
+- 일관성 모델 
+
+	- 즉각적 일관성
+
+	- 최종적 일관성
+
+	- 하이브리드 일관성
+
+- CQRS 패턴 
+
+	- 명령(C, U, D)
+
+	- 조회(R)
+
+- CDC 패턴 
+
+	- 로그 기반 접근 방식
+
+### 참고 자료
+
+- [2PC & SAGA 패턴](https://velog.io/@ch200203/MSA-%ED%99%98%EA%B2%BD%EC%97%90%EC%84%9C%EC%9D%98-%EB%B6%84%EC%82%B0-%ED%8A%B8%EB%9E%9C%EC%9E%AD%EC%85%98-%EA%B4%80%EB%A6%AC2PC-SAGA-%ED%8C%A8%ED%84%B4)
+- [이벤트 소싱 패턴](https://f-lab.kr/insight/maintaining-data-consistency-in-microservices-architecture-20240803)
+- [CQRS 패턴](https://junuuu.tistory.com/891)
+- [CDC 패턴](https://www.redhat.com/ko/topics/integration/what-is-change-data-capture)
+- [일관성 모델](https://velog.io/@jm1225/MSA-Database-Consistency)

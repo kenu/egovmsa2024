@@ -1,158 +1,73 @@
-# 마이크로서비스 도입 안티패턴과 과제
+### 1. 의도 (Intent)
 
-<img src="images/path.webp" class="img" alt="path">
-from: https://martinfowler.com/bliki/MonolithFirst.html
+![](./image/image1.png)
 
-- 마이크로서비스 아키텍처는 확장성, 민첩성, 유지보수성 향상 등 다양한 이점을 약속
-- 하지만 많은 조직들이 마이크로서비스를 효과적으로 도입하는 데 어려움을 겪고 있음
-- 마이크로서비스 도입 시 흔히 발생하는 안티패턴과 과제들을 살펴보고, 조직들이 함정을 피하고 마이크로서비스 여정에서 성공할 수 있도록 통찰을 제공
+이벤트 기반 아키텍처는 분산된 시스템 간 이벤트를 생성 발행하고 발행된 이벤트를 필요로 하는 수신자에게 전송하고 이벤트를 수신한 수신자가 이벤트를 처리하는 형태의 시스템 아키텍처입니다.
 
-## 마이크로서비스를 목표로 삼는 안티패턴
+EDA의 목적은 **분산 시스템**에서 발생하는 복잡한 데이터 흐름을 처리하고, 각 구성 요소가 이벤트에 따라 독립적으로 반응함으로써, 시스템의 확장성을 확보하고 복잡성을 줄이는 것입니다.
 
-가장 흔한 안티패턴 중 하나는 **마이크로서비스 도입 자체를 목표로** 삼는 것
-많은 조직들이 마이크로서비스가 왜 필요한지, 비즈니스 목표와 어떻게 연계되는지 명확히 이해하지 못한 채 서둘러 도입하려고 함
-**결과:**
+### 이벤트 기반 마이크로서비스
 
-- 불필요한 복잡성으로 인한 자원 낭비
-- 측정 가능한 이점 부족
-- 시스템 성능과 안정성 저하 가능성
+![](./image/image2.png)
 
-**해결책:**
+**Event Driven MicroService**란,
+MSA가 적용된 시스템에서 이벤트 발생시 해당 이벤트 로그를 보관하고 이를 기반으로 동작하며, 비동기 통신을 통해 시스템 내 통합을 수행하는 아키텍처입니다.
 
-- 마이크로서비스 고려 전 비즈니스 목표를 명확히 정의
-- 특정 요구사항에 마이크로서비스가 최선의 해결책인지 평가
-- 실질적인 이점을 제공하는 영역에만 마이크로서비스 구현
+### 2. 문제 (Problem)
 
-## 조직의 준비 부족
+전통적인 **동기적 아키텍처**(모놀리식 구조나 RESTful API 기반 아키텍처)는 다음과 같은 문제를 가지고 있었습니다:
 
-조직의 준비 부족은 마이크로서비스 도입의 성공을 방해하는 "암흑물질 같은 힘"으로 볼 수 있음
-많은 조직들이 마이크로서비스를 효과적으로 구현하고 관리하는 데 필요한 문화, 기술, 관행이 부족
+- **높은 결합도**: 서비스 간의 직접적인 호출로 인해, 각 서비스가 서로 강하게 결합되어 있어 유지보수와 확장이 어렵습니다.
+- **확장성의 한계**: 대규모 트래픽 증가나 다양한 이벤트 처리가 필요한 경우, 동기적 요청-응답 방식은 병목 현상을 야기하며 확장성이 떨어집니다.
+- **가용성 문제**: 특정 서비스가 다운되면, 다른 서비스도 영향을 받는 경우가 많아 전체 시스템의 안정성에 문제가 발생합니다.
 
-**조직 준비의 핵심 측면:**
+### 3. 해결법 (Solution)
 
-1. **엄격한 설계 기술:** 개발자들은 잘 정의된 서비스 경계와 API를 만들기 위한 강력한 소프트웨어 설계 기술을 갖춰야 ㅎ함
-2. **학습 문화:** 마이크로서비스 도입에는 실험과 학습이 수반되므로, 조직은 변화를 수용하고 실패를 용인하는 문화가 필요합니다.
-3. **DevOps와 팀 토폴로지:** 성공적인 마이크로서비스 구현을 위해서는 DevOps 관행을 채택하고 느슨하게 결합된 자율적인 개발을 위한 팀 구성이 필요합니다.
+![](./image/image3.png)
 
-**해결책:**
+**이벤트 기반 아키텍처**는 이러한 문제들을 해결하기 위해 **비동기적 이벤트 처리** 방식을 도입했습니다. 각 서비스는 서로 **직접 통신하지 않고**, 특정 이벤트가 발생했을 때 **이벤트 브로커**(메시지 큐, Pub/Sub 시스템 등)를 통해 이벤트를 발행하고, 다른 서비스가 이를 **구독**하는 방식으로 동작합니다.
 
-- 필요한 기술을 갖추기 위한 교육과 멘토링에 투자
-- 학습과 실험을 장려하는 생성적 문화 조성
-- 마이크로서비스를 지원하는 DevOps 관행과 팀 구조 도입에 전념
+특징은 다음과 같습니다.
 
-## 기술에만 집중하는 안티패턴
+- **느슨한 결합**을 유지하여 서비스 간 의존성을 최소화할 수 있습니다.
+- 각 서비스는 독립적으로 확장 가능하고, 이벤트가 발생할 때만 처리되므로 **효율적인 자원 사용**이 가능합니다.
+- 이벤트가 발생하면 각 서비스가 **비동기적**으로 이벤트를 처리하므로 서비스가 대기하지 않고, 전체 시스템의 **성능**과 **반응성**이 향상됩니다.
 
-또 다른 흔한 안티패턴은 마이크로서비스의 기술적 측면, 특히 배포 인프라에 과도하게 집중하는 것
-이는 종종 근본적인 아키텍처와 조직적 과제를 해결하지 않은 채 복잡한 도구와 플랫폼에 조기 투자하는 결과를 초래
+## 4. 아키텍처
 
-**결과:**
+EDA는 시스템 내에서 발생하는 이벤트를 기반으로 상호작용하는 아키텍처 스타일입니다. 이벤트는 상태 변화나 작업의 발생을 의미하며, 시스템의 컴포넌트는 이벤트를 생성하거나 이를 소비(구독)하여 비동기적으로 동작합니다.
 
-- 차별화되지 않은 과도한 작업
-- 잠재적으로 부적합한 기술에 조기 투자
-- 중요한 서비스 설계와 API 고려사항 소홀
+**구성 요소**
 
-**해결책:**
+- **Event Producers (이벤트 생성자)**: 이벤트를 발생시키는 주체. 시스템 내에서 상태 변화가 발생할 때 이벤트를 생성하여 전달합니다. 예를 들어, 사용자가 상품을 구매하면 구매 이벤트가 생성됩니다.
+- **Event Consumers (이벤트 소비자)**: 이벤트를 구독하고, 해당 이벤트가 발생할 때 특정 작업을 수행하는 주체입니다. 소비자는 여러 이벤트를 동시에 구독할 수 있습니다.
+- **Event Channel**: 이벤트가 전송되는 경로로, 메시지 브로커(예: Kafka, RabbitMQ) 등이 이벤트를 중개합니다. 이를 통해 이벤트가 생성자에서 소비자에게 전달됩니다.
+- **Event Stream Processing**: 실시간으로 이벤트 스트림을 처리하며, 이벤트를 실시간으로 분석하고 반응하는 프로세스입니다.
 
-- 먼저 서비스 분해와 정의에 집중
-- 초기 서비스를 지원하기 위한 최소한의 인프라 구축
-- 경험이 쌓임에 따라 기술 스택을 점진적으로 발전
+## 5. 장단점
 
-## 더 많을수록 좋다는 안티패턴
+- **장점**:
+    - **비동기 처리**: 서비스들이 비동기적으로 이벤트를 주고받기 때문에, 시스템이 느린 서비스나 장애 서비스에 종속되지 않고 유연하게 동작할 수 있습니다.
+    - **확장성**: 새로운 이벤트 소비자를 추가하거나 제거하는 것이 용이해 확장성과 유연성을 확보할 수 있습니다.
+    - **실시간 반응**: 이벤트가 발생하는 즉시 반응할 수 있어, 실시간 처리 및 대응이 가능합니다.
+    - **느슨한 결합**: 서비스 간 의존성이 낮아져 변경 사항이 있더라도 시스템 전체에 영향을 주지 않으며, 서비스 독립성이 높아집니다.
+- **단점**:
+    - **복잡성 증가**: 시스템 내에서 발생하는 이벤트의 흐름을 파악하고 관리하는 것이 어려워질 수 있으며, 디버깅 및 트러블슈팅이 복잡해집니다.
+    - **데이터 일관성 문제**: 비동기적으로 데이터가 처리되기 때문에, 데이터의 일관성을 즉시 보장하기 어렵습니다. 결국 분산 트랜잭션 관리가 필요할 수 있습니다.
+    - **메시지 중개 시스템 의존**: 이벤트를 처리하기 위한 메시지 브로커나 이벤트 스트림 처리 시스템의 설정과 관리가 필요하며, 추가적인 인프라 비용이 발생할 수 있습니다.
+    - **순서 보장 문제**: 이벤트 처리 순서를 보장하는 데 추가적인 설계와 노력이 필요할 수 있습니다.
 
-"더 많을수록 좋다"는 안티패턴은 조직이 서비스가 많을수록 항상 더 좋다고 잘못 믿어 지나치게 세분화된 마이크로서비스 아키텍처를 만들 때 발생
+## 6. 다른 기술과의 관계
 
-**결과:**
+- **메시지 브로커**: 이벤트 기반 아키텍처는 메시지 브로커와 밀접하게 연관되어 있습니다. Kafka, RabbitMQ와 같은 메시지 브로커는 이벤트 생성자와 소비자 간의 비동기 통신을 가능하게 하고, 이벤트 전송, 큐잉, 스트리밍을 처리합니다.
+- **마이크로서비스 아키텍처(MSA)**: EDA는 MSA와 함께 자주 사용됩니다. MSA에서 각 서비스는 독립적으로 동작하며, 이벤트를 통해 서로 통신할 수 있습니다. 이로써 마이크로서비스 간의 느슨한 결합을 유지하고 유연성을 극대화할 수 있습니다.
+- **클라우드 컴퓨팅**: EDA는 클라우드 환경과 잘 어울립니다. AWS의 Lambda와 SQS, Azure Event Grid, Google Pub/Sub과 같은 클라우드 서비스는 이벤트 기반 애플리케이션을 쉽게 구축할 수 있는 도구와 플랫폼을 제공합니다.
+- **서버리스(Serverless)**: 서버리스 환경에서 이벤트 기반 아키텍처가 자주 사용됩니다. 서버리스 함수는 이벤트가 발생했을 때 실행되므로, 이벤트 기반으로 유연하게 애플리케이션을 확장할 수 있습니다.
+- **데이터 스트림 처리**: Apache Kafka Streams, Apache Flink 같은 스트리밍 데이터 처리 도구는 EDA에서 실시간으로 이벤트 스트림을 분석하고 처리하는 데 사용됩니다.
 
-- 개발, 테스트, 배포의 복잡성 증가
-- 서비스 내부의 복잡성이 서비스 간 복잡성으로 이동
-- 동시 변경이 필요한 밀접하게 결합된 서비스 발생 가능성
+## 7. 레퍼런스
 
-**해결책:**
-
-- 기본적으로 팀당 하나의 서비스로 시작
-- 특정 문제를 해결할 때만 추가 서비스 정의
-- 서비스나 팀이 관리하기 너무 커지면 분할
-
-## 걷기도 전에 날려고 하는 안티패턴
-
-이 안티패턴은 기본적인 소프트웨어 개발 관행을 먼저 숙달하지 않은 채 마이크로서비스를 도입하려는 시도를 뜻함
-
-**핵심 기본 사항:**
-
-- 클린 코드
-- 자동화된 테스팅
-- 좋은 설계 관행 (예: OOD, DDD)
-
-**결과:**
-
-- 잘못 설계된 마이크로서비스 아키텍처
-- 테스트 자동화 부족으로 인한 안정성 문제
-- 소프트웨어를 빠르고 자주 제공하는 능력 감소
-
-**해결책:**
-
-- 클린 코드 관행 수용 및 강제
-- 개발의 핵심 부분으로 자동화된 테스팅 구현
-- 도메인 주도 설계와 같은 영역의 설계 기술 교육에 투자
-
-## 산발적 도입 안티패턴
-
-산발적 도입은 일관된 전략이나 로드맵 없이 마이크로서비스를 무계획적으로 구현하는 것을 뜻함
-
-**결과:**
-
-- 조직 전체의 일관성 없는 아키텍처
-- 다양한 마이크로서비스 구현 관리와 유지보수의 어려움
-- 기술 부채 증가와 통합 과제 발생 가능성
-
-**해결책:**
-
-- 비즈니스 목표에 부합하는 명확한 마이크로서비스 도입 전략 수립
-- 마이크로서비스로의 점진적, 통제된 마이그레이션을 위한 로드맵 작성
-- 조직 전체의 마이크로서비스 개발을 위한 표준과 모범 사례 수립
-
-## 엔드-투-엔드 테스팅 함정
-
-마이크로서비스 아키텍처에서 엔드-투-엔드 테스팅에 과도하게 의존하면 "분산 모놀리스"를 초래하고 마이크로서비스의 많은 이점을 상쇄할 수 있음
-
-**결과:**
-
-- 테스팅 병목으로 인한 배포 빈도 감소
-- 테스트의 복잡성과 취약성 증가
-- 서비스의 독립적 배포 가능성 상실
-
-**해결책:**
-
-- 서비스 수준 테스팅과 계약 테스트에 집중
-- 독립적으로 배포 및 테스트 가능한 서비스 설계
-- 엔드-투-엔드 테스트는 중요한 사용자 여정에 한해 제한적으로 사용
-
-## 결론
-
-마이크로서비스 아키텍처 도입은 상당한 이점을 제공할 수 있지만, 신중한 계획, 준비, 실행이 필요
-이러한 흔한 안티패턴을 피하고 조직적, 기술적 과제를 해결함으로써 기업은 마이크로서비스 도입 성공 가능성을 높일 수 있음
-#### 주요 시사점:
-
-1. 마이크로서비스 도입을 명확한 비즈니스 목표와 연계
-2. 문화적, 기술적으로 조직을 준비
-3. 기술보다 서비스 설계와 분해에 먼저 집중
-4. 관리 가능한 수의 서비스로 시작하여 점진적으로 발전
-5. 기본적인 소프트웨어 개발 관행 숙달
-6. 일관된 도입 전략과 로드맵 개발
-7. 광범위한 엔드-투-엔드 테스팅보다 서비스 수준 테스팅 우선
-
-## ref
-
-- [Anti-pattern: microservices as the goal](https://microservices.io/post/antipatterns/2019/01/14/antipattern-microservices-are-the-goal.html)
-- [Is organizational unpreparedness a dark matter force?](https://microservices.io/post/refactoring/2023/07/25/dark-matter-force-organizational-unpreparedness.html)
-- [Microservices adoption anti-pattern: Focussing on technology](https://microservices.io/post/antipatterns/2019/04/30/antipattern-focus-on-technology.html)
-- [Microservices adoption anti-pattern: More the merrier](https://microservices.io/post/antipatterns/2019/05/21/antipattern-more-the-merrier.html)
-- [Microservices adoption anti-pattern: Red flag law](https://microservices.io/post/antipatterns/2019/06/07/antipattern-red-flag-law.html)
-- [Microservices adoption anti-pattern: scattershot adoption](https://microservices.io/post/antipatterns/2019/02/25/antipattern-scattershot-adoption.html)
-- [Microservices adoption anti-pattern: Trying to fly before you can walk](https://microservices.io/post/antipatterns/2019/04/09/antipattern-flying-before-walking.html)
-- [Microservices adoption anti-patterns: microservices are a magic pixie dust](https://microservices.io/post/antipatterns/2019/01/07/microservices-are-a-magic-pixie-dust.html)
-- [Microservices adoption antipatterns](https://microservices.io/microservices/antipatterns/-/the/series/2019/06/18/microservices-adoption-antipatterns.html)
-- [Potholes in the road from monolithic hell - Microservices adoption anti-patterns](https://microservices.io/microservices/general/2018/11/04/potholes-in-road-from-monolithic-hell.html)
-- [Services + End-to-End Testing = ?](https://microservices.io/post/architecture/2024/03/29/services-with-end-to-end-testing-equals-monolith.html)
-- [STOP hurting yourself by doing big bang modernizations!](https://microservices.io/post/architecture/2024/06/27/stop-hurting-yourself-by-doing-big-bang-modernizations.html)
-- [The microservice architecture is meant to simplify and accelerate development, but only when done correctly](https://microservices.io/post/architecture/2023/07/06/msa-is-meant-to-simplify-development.md.html)
+- https://aws.amazon.com/ko/what-is/eda/
+- https://cloud.google.com/eventarc/docs/event-driven-architectures?hl=ko
+- https://f-lab.kr/insight/understanding-event-driven-architecture
+- https://aws.amazon.com/ko/event-driven-architecture/
